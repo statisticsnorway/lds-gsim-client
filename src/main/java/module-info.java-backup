@@ -1,0 +1,6 @@
+module no.ssb.gsim.client {
+    requires java.desktop;
+    requires apollo.api;
+
+    exports no.ssb.gsim.client;
+}

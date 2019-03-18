@@ -1,0 +1,46 @@
+query GetUnitDataset($id:ID!) {
+    UnitDataSetById(id: $id) {
+        unitDataStructure {
+            logicalRecords {
+                edges {
+                    node {
+                        ...Components
+                    }
+                }
+            }
+        }
+    }
+}
+
+
+fragment Identifiers on IdentifierComponent {
+    isUnique
+    shortName
+    description {
+        languageText
+    }
+}
+
+fragment Components on LogicalRecord {
+    identifierComponents {
+        edges {
+            node {
+                ...Identifiers
+            }
+        }
+    }
+    measureComponents {
+        edges {
+            node {
+                shortName
+            }
+        }
+    }
+    attributeComponents {
+        edges {
+            node {
+                shortName
+            }
+        }
+    }
+}
