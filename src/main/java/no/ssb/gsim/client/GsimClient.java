@@ -12,7 +12,9 @@ import no.ssb.gsim.client.avro.DimensionalDatasetSchemaConverter;
 import no.ssb.gsim.client.avro.UnitDatasetSchemaConverter;
 import no.ssb.gsim.client.graphql.GetDimensionalDatasetQuery;
 import no.ssb.gsim.client.graphql.GetUnitDatasetQuery;
+import no.ssb.lds.data.client.DataClient;
 import okhttp3.HttpUrl;
+import org.apache.avro.Schema;
 import org.apache.avro.generic.GenericRecord;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,6 +23,9 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Objects;
 
+/**
+ * Gsim Java client.
+ */
 public class GsimClient {
 
     private static final UnitDatasetSchemaConverter UNIT_DATASET_SCHEMA_CONVERTER = new UnitDatasetSchemaConverter();
@@ -29,9 +34,9 @@ public class GsimClient {
 
     private static Logger logger = LoggerFactory.getLogger(GsimClient.class);
     private final ApolloClient client;
-    private final Object dataClient;
+    private final DataClient dataClient;
 
-    public GsimClient(Object dataClient, URL ldsUrl) {
+    public GsimClient(DataClient dataClient, URL ldsUrl) {
         logger.debug("setting up with LDS {}", ldsUrl);
         client = ApolloClient.builder().serverUrl(Objects.requireNonNull(HttpUrl.get(ldsUrl))).build();
         this.dataClient = dataClient;
@@ -65,37 +70,32 @@ public class GsimClient {
         return responseObservable.firstOrError();
     }
 
-    /**
-     * Write the the data for a dataset
-     */
-    public Completable writeData(String datasetID, Flowable<GenericRecord> data, String token) {
-        return getUnitDataset(datasetID).map(dataResponse -> {
+    public Single<Schema> getSchema(String datasetID) {
+        return getUnitDataset(datasetID).flatMap(dataResponse -> {
             if (dataResponse.hasErrors()) {
-                // TODO: Propagate errors.
-                throw new IllegalArgumentException();
+                // TODO: Define error.
+                return Single.error(new IllegalArgumentException());
             } else {
-                return dataResponse.data();
+                return Single.just(UNIT_DATASET_SCHEMA_CONVERTER.convert(dataResponse.data()));
             }
-        }).map(UNIT_DATASET_SCHEMA_CONVERTER::convert).flatMapCompletable(schema -> {
-            return null;
-            //return dataClient.writeData(datasetID, schema, token, data);
         });
     }
 
     /**
-     * Read the data of a dataset
+     * Write a the {@link GenericRecord}s for a dataset.
+     */
+    public Completable writeData(String datasetID, Flowable<GenericRecord> data, String token) {
+        return getSchema(datasetID).flatMapCompletable(schema -> {
+            return dataClient.writeData(datasetID, schema, token, data);
+        });
+    }
+
+    /**
+     * Read the {@link GenericRecord}s of a dataset.
      */
     public Flowable<GenericRecord> readDatasetData(String datasetID, String token) {
-        return getUnitDataset(datasetID).map(dataResponse -> {
-            if (dataResponse.hasErrors()) {
-                // TODO: Propagate errors.
-                throw new IllegalArgumentException();
-            } else {
-                return dataResponse.data();
-            }
-        }).map(UNIT_DATASET_SCHEMA_CONVERTER::convert).flatMapPublisher(schema -> {
-            //return dataClient.readData(datasetID, schema, token);
-            return null;
+        return getSchema(datasetID).flatMapPublisher(schema -> {
+            return dataClient.readData(datasetID, schema, token);
         });
     }
 

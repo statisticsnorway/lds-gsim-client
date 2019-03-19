@@ -49,10 +49,12 @@ public class UnitDatasetSchemaConverter implements SchemaConverter<GetUnitDatase
 
             // The GSIM model does not supports hierarchical structures yet so we only transform the first logical
             // record.
-            if (logicalRecords.edges().size() > 1)
-            for (GetUnitDatasetQuery.Edge edge : logicalRecords.edges()) {
-
-                UnitComponents unitComponents = edge.node().fragments().unitComponents();
+            if (logicalRecords.edges().isEmpty()) {
+                throw new StructureConversionException("missing logical record");
+            } else if (logicalRecords.edges().size() > 1) {
+                throw new StructureConversionException("more than one logical record");
+            } else {
+                UnitComponents unitComponents = logicalRecords.edges().get(0).node().fragments().unitComponents();
                 List<Schema.Field> fields = new ArrayList<>();
 
                 fields.addAll(convertIdentifiers(unitComponents));
@@ -60,7 +62,6 @@ public class UnitDatasetSchemaConverter implements SchemaConverter<GetUnitDatase
                 fields.addAll(convertAttributes(unitComponents));
                 return Schema.createRecord(fields);
             }
-            throw new StructureConversionException("missing logical record");
         } catch (RuntimeException re) {
             throw new StructureConversionException(re);
         }
@@ -74,7 +75,8 @@ public class UnitDatasetSchemaConverter implements SchemaConverter<GetUnitDatase
             Schema.Field field = new Schema.Field(
                     node.shortName(),
                     Schema.create(convertType(node.representedVariable().fragments().unitVariableType())),
-                    "", null
+                    "...",
+                    (Object) null
             );
             fields.add(field);
         }
@@ -88,7 +90,7 @@ public class UnitDatasetSchemaConverter implements SchemaConverter<GetUnitDatase
             Schema.Field field = new Schema.Field(
                     node.shortName(),
                     Schema.create(convertType(node.representedVariable().fragments().unitVariableType())),
-                    "", null
+                    "", (Object) null
             );
             fields.add(field);
         }
@@ -102,7 +104,7 @@ public class UnitDatasetSchemaConverter implements SchemaConverter<GetUnitDatase
             Schema.Field field = new Schema.Field(
                     node.shortName(),
                     Schema.create(convertType(node.representedVariable().fragments().unitVariableType())),
-                    "", null
+                    "", (Object) null
             );
             fields.add(field);
         }
