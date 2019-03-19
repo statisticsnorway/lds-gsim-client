@@ -19,28 +19,47 @@ buildscript {
 }
 
 repositories {
+    mavenLocal()
     jcenter()
 }
 
 apply plugin: 'java-library'
+
+compileJava   {
+    sourceCompatibility = '1.8'
+    targetCompatibility = '1.8'
+}
+
 apply plugin: 'com.apollographql.android'
+
+apollo {
+    generateModelBuilder = true
+}
 
 dependencies {
     // This dependency is exported to consumers, that is to say found on their compile classpath.
     //    api 'org.apache.commons:commons-math3:3.6.1'
 
     api 'com.apollographql.apollo:apollo-runtime:1.0.0-alpha5'
-    api 'com.apollographql.apollo:apollo-rx2-support:1.0.0-alpha5'
+    api 'com.apollographql.apollo:apollo-rx2-support:1.0.0-alpha5'// https://mvnrepository.com/artifact/org.apache.avro/avro
+
+    implementation group: 'org.apache.avro', name: 'avro', version: '1.8.2'
+
+    // implementation 'org.bitbucket.b_c:jose4j:0.6.5'
+
+    implementation 'no.ssb.lds.data:linked-data-store-data-client:0.0.1-SNAPSHOT'
 
     // This dependency is used internally, and not exposed to consumers on their own compile classpath.
+    implementation 'com.squareup.okhttp3:okhttp:3.14.0'
     implementation 'com.google.guava:guava:27.0.1-jre'
     implementation 'com.intellij:annotations:+@jar'
+    implementation 'javax.annotation:javax.annotation-api:1.2'
+
+
     implementation group: 'ch.qos.logback', name: 'logback-classic', version: '1.2.3'
 
     // Use JUnit test framework
     testImplementation 'junit:junit:4.12'
-
-
 }
 
 

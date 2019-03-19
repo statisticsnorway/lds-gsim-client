@@ -1,0 +1,131 @@
+{
+  "data": {
+    "UnitDataSetById": {
+      "__typename": "UnitDataSet",
+      "id": "b9c10b86-5867-4270-b56e-ee7439fe381e",
+      "unitDataStructure": {
+        "__typename": "UnitDataStructure",
+        "logicalRecords": {
+          "__typename": "UnitDataStructureLogicalRecordConnection",
+          "edges": [
+            {
+              "__typename": "UnitDataStructureLogicalRecordEdge",
+              "node": {
+                "__typename": "LogicalRecord",
+                "name": [
+                  {
+                    "__typename": "MultilingualText",
+                    "languageText": "Person with income record"
+                  }
+                ],
+                "identifierComponents": {
+                  "__typename": "LogicalRecordIdentifierComponentConnection",
+                  "edges": [
+                    {
+                      "__typename": "LogicalRecordIdentifierComponentEdge",
+                      "node": {
+                        "__typename": "IdentifierComponent",
+                        "shortName": "PERSON_ID",
+                        "representedVariable": {
+                          "__typename": "RepresentedVariable",
+                          "substantiveValueDomain": {
+                            "__typename": "DescribedValueDomain",
+                            "dataType": "STRING"
+                          }
+                        }
+                      }
+                    }
+                  ]
+                },
+                "measureComponents": {
+                  "__typename": "LogicalRecordMeasureComponentConnection",
+                  "edges": [
+                    {
+                      "__typename": "LogicalRecordMeasureComponentEdge",
+                      "node": {
+                        "__typename": "MeasureComponent",
+                        "shortName": "INCOME",
+                        "representedVariable": {
+                          "__typename": "RepresentedVariable",
+                          "substantiveValueDomain": {
+                            "__typename": "DescribedValueDomain",
+                            "dataType": "INTEGER"
+                          }
+                        }
+                      }
+                    },
+                    {
+                      "__typename": "LogicalRecordMeasureComponentEdge",
+                      "node": {
+                        "__typename": "MeasureComponent",
+                        "shortName": "GENDER",
+                        "representedVariable": {
+                          "__typename": "RepresentedVariable",
+                          "substantiveValueDomain": {
+                            "__typename": "EnumeratedValueDomain",
+                            "dataType": "STRING",
+                            "klassUrl": "https://www.ssb.no/klass/klassifikasjoner/2"
+                          }
+                        }
+                      }
+                    },
+                    {
+                      "__typename": "LogicalRecordMeasureComponentEdge",
+                      "node": {
+                        "__typename": "MeasureComponent",
+                        "shortName": "MARITAL_STATUS",
+                        "representedVariable": {
+                          "__typename": "RepresentedVariable",
+                          "substantiveValueDomain": {
+                            "__typename": "EnumeratedValueDomain",
+                            "dataType": "STRING",
+                            "klassUrl": "https://www.ssb.no/klass/klassifikasjoner/19"
+                          }
+                        }
+                      }
+                    },
+                    {
+                      "__typename": "LogicalRecordMeasureComponentEdge",
+                      "node": {
+                        "__typename": "MeasureComponent",
+                        "shortName": "MUNICIPALITY",
+                        "representedVariable": {
+                          "__typename": "RepresentedVariable",
+                          "substantiveValueDomain": {
+                            "__typename": "EnumeratedValueDomain",
+                            "dataType": "STRING",
+                            "klassUrl": "https://www.ssb.no/en/klass/klassifikasjoner/131"
+                          }
+                        }
+                      }
+                    }
+                  ]
+                },
+                "attributeComponents": {
+                  "__typename": "LogicalRecordAttributeComponentConnection",
+                  "edges": [
+                    {
+                      "__typename": "LogicalRecordAttributeComponentEdge",
+                      "node": {
+                        "__typename": "AttributeComponent",
+                        "shortName": "DATA_QUALITY",
+                        "representedVariable": {
+                          "__typename": "RepresentedVariable",
+                          "substantiveValueDomain": {
+                            "__typename": "EnumeratedValueDomain",
+                            "dataType": "STRING",
+                            "klassUrl": "https://www.ssb.no/klass/klassifikasjoner/?"
+                          }
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          ]
+        }
+      }
+    }
+  }
+}

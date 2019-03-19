@@ -1,10 +1,14 @@
-query GetUnitDataset($id:ID!) {
+query GetUnitDataset($id: ID!) {
     UnitDataSetById(id: $id) {
+        id
         unitDataStructure {
             logicalRecords {
                 edges {
                     node {
-                        ...Components
+                        name {
+                            languageText
+                        }
+                        ...UnitComponents
                     }
                 }
             }
@@ -12,20 +16,26 @@ query GetUnitDataset($id:ID!) {
     }
 }
 
-
-fragment Identifiers on IdentifierComponent {
-    isUnique
-    shortName
-    description {
-        languageText
+fragment UnitVariableType on RepresentedVariable {
+    substantiveValueDomain {
+        ... on DescribedValueDomain {
+            dataType
+        }
+        ... on EnumeratedValueDomain {
+            dataType
+            klassUrl
+        }
     }
 }
 
-fragment Components on LogicalRecord {
+fragment UnitComponents on LogicalRecord {
     identifierComponents {
         edges {
             node {
-                ...Identifiers
+                shortName
+                representedVariable {
+                    ...UnitVariableType
+                }
             }
         }
     }
@@ -33,6 +43,9 @@ fragment Components on LogicalRecord {
         edges {
             node {
                 shortName
+                representedVariable {
+                    ...UnitVariableType
+                }
             }
         }
     }
@@ -40,6 +53,9 @@ fragment Components on LogicalRecord {
         edges {
             node {
                 shortName
+                representedVariable {
+                    ...UnitVariableType
+                }
             }
         }
     }

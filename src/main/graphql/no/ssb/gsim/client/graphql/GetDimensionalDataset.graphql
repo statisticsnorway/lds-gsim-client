@@ -1,0 +1,83 @@
+query GetDimensionalDataset($id: ID!) {
+    DimensionalDataSetById(id: $id) {
+        dimensionalDataStructure {
+            ...DimensionalComponents
+        }
+    }
+}
+
+fragment DimensionalIdentifiers on IdentifierComponent {
+    isUnique
+    shortName
+    representedVariable {
+        substantiveValueDomain {
+            ... on DescribedValueDomain {
+                dataType
+            }
+            ... on EnumeratedValueDomain {
+                dataType
+            }
+        }
+    }
+    description {
+        languageText
+    }
+}
+
+fragment DimensionalMeasures on MeasureComponent {
+    shortName
+    representedVariable {
+        substantiveValueDomain {
+            ... on DescribedValueDomain {
+                dataType
+            }
+            ... on EnumeratedValueDomain {
+                dataType
+            }
+        }
+    }
+    description {
+        languageText
+    }
+}
+
+fragment DimensionalAttributes on AttributeComponent {
+    shortName
+    representedVariable {
+        substantiveValueDomain {
+            ... on DescribedValueDomain {
+                dataType
+            }
+            ... on EnumeratedValueDomain {
+                dataType
+            }
+        }
+    }
+    description {
+        languageText
+    }
+}
+
+fragment DimensionalComponents on DimensionalDataStructure {
+    identifierComponents {
+        edges {
+            node {
+                ...DimensionalIdentifiers
+            }
+        }
+    }
+    measureComponents {
+        edges {
+            node {
+                ...DimensionalMeasures
+            }
+        }
+    }
+    attributeComponents {
+        edges {
+            node {
+                ...DimensionalAttributes
+            }
+        }
+    }
+}

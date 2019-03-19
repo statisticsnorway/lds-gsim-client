@@ -6,26 +6,17 @@ package no.ssb.gsim.client;
 import com.apollographql.apollo.api.Response;
 import io.reactivex.Single;
 import no.ssb.gsim.client.graphql.GetUnitDatasetQuery;
-import no.ssb.gsim.client.graphql.fragment.Components;
 import org.junit.Test;
 
-import java.util.List;
-import java.util.stream.Collectors;
-
-import static org.junit.Assert.assertTrue;
+import java.net.MalformedURLException;
+import java.net.URL;
 
 public class LibraryTest {
 
     @Test
-    public void testSomeLibraryMethod() {
-        Library classUnderTest = new Library();
-        assertTrue("someLibraryMethod should return 'true'", classUnderTest.someLibraryMethod());
-    }
+    public void testGraphQL() throws MalformedURLException {
 
-    @Test
-    public void testGraphQL() {
-
-        GsimClient gsimClient = GsimClient.newClient(new GsimClient.Configuration());
+        GsimClient gsimClient = new GsimClient(null, new URL("http://35.228.232.124/lds/graphql"));
 
         Single<Response<GetUnitDatasetQuery.Data>> dataset = gsimClient.getUnitDataset("b9c10b86-5867-4270-b56e-ee7439fe381e");
 
@@ -34,12 +25,6 @@ public class LibraryTest {
         GetUnitDatasetQuery.UnitDataSetById dataSetById = response.data().UnitDataSetById();
         GetUnitDatasetQuery.UnitDataStructure structure = dataSetById.unitDataStructure();
         GetUnitDatasetQuery.LogicalRecords logicalRecords = structure.logicalRecords();
-        List<Components> components = logicalRecords.edges().stream().map(edge -> edge.node()).map(node -> node.fragments().components())
-                .collect(Collectors.toList());
-        components.forEach(c -> {
-            System.out.println(c.identifierComponents());
-            System.out.println(c.measureComponents());
-            System.out.println(c.attributeComponents());
-        });
+        System.out.print(logicalRecords);
     }
 }
