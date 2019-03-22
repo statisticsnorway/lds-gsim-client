@@ -9,6 +9,8 @@ import org.apache.avro.generic.GenericRecord;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -29,7 +31,7 @@ public class GsimClientTest {
             Map<String, List<GenericRecord>> data = new LinkedHashMap<>();
 
             @Override
-            public Completable writeData(String id, Schema schema, String token, Flowable<GenericRecord> records) {
+            public Completable writeData(String id, Schema schema, Flowable<GenericRecord> records, String token) {
                 return records.toList().flatMapCompletable(genericRecords -> {
                     this.data.put(id, genericRecords);
                     return Completable.complete();
@@ -37,13 +39,27 @@ public class GsimClientTest {
             }
 
             @Override
+            public Completable convertAndWrite(String s, Schema schema, InputStream inputStream, String s1, String s2) {
+                throw new UnsupportedOperationException();
+            }
+
+            @Override
+            public OutputStream readAndConvert(String s, Schema schema, String s1, String s2) {
+                throw new UnsupportedOperationException();
+            }
+
+            @Override
             public Flowable<GenericRecord> readData(String id, Schema schema, String token) {
                 return Flowable.fromIterable(this.data.get(id));
             }
         };
-        client = new GsimClient(
-                noOpDataClient, new URL("http://35.228.232.124/lds/graphql/")
-        );
+
+        GsimClient.Configuration clientConfiguration = new GsimClient.Configuration();
+        clientConfiguration.setLdsUrl(new URL("http://35.228.232.124/lds/graphql/"));
+        client =         GsimClient.builder()
+                .withDataClient(noOpDataClient)
+                .withConfiguration(clientConfiguration)
+                .build();
     }
 
     @Test
@@ -77,10 +93,5 @@ public class GsimClientTest {
         List<GenericRecord> readRecords = client.readDatasetData(datasetID, null).toList().blockingGet();
 
         assertThat(readRecords).containsExactlyElementsOf(records);
-    }
-
-    @Test
-    public void testReadData() {
-
     }
 }

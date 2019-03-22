@@ -6,7 +6,7 @@ import com.apollographql.apollo.api.Response;
 import com.apollographql.apollo.rx2.Rx2Apollo;
 import io.reactivex.Completable;
 import io.reactivex.Flowable;
-import io.reactivex.Observable;
+import io.reactivex.Maybe;
 import io.reactivex.Single;
 import no.ssb.gsim.client.avro.DimensionalDatasetSchemaConverter;
 import no.ssb.gsim.client.avro.UnitDatasetSchemaConverter;
@@ -19,7 +19,6 @@ import org.apache.avro.generic.GenericRecord;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Objects;
 
@@ -28,57 +27,75 @@ import java.util.Objects;
  */
 public class GsimClient {
 
+    private static final Logger logger = LoggerFactory.getLogger(GsimClient.class);
+
     private static final UnitDatasetSchemaConverter UNIT_DATASET_SCHEMA_CONVERTER = new UnitDatasetSchemaConverter();
     private static final DimensionalDatasetSchemaConverter DIMENSIONAL_DATASET_SCHEMA_CONVERTER =
             new DimensionalDatasetSchemaConverter();
 
-    private static Logger logger = LoggerFactory.getLogger(GsimClient.class);
     private final ApolloClient client;
     private final DataClient dataClient;
 
-    public GsimClient(DataClient dataClient, URL ldsUrl) {
+    private GsimClient(Builder builder) {
+        URL ldsUrl = builder.configuration.getLdsUrl();
         logger.debug("setting up with LDS {}", ldsUrl);
         client = ApolloClient.builder().serverUrl(Objects.requireNonNull(HttpUrl.get(ldsUrl))).build();
-        this.dataClient = dataClient;
+        this.dataClient = builder.dataClient;
+
+    }
+
+    public static Builder builder() {
+        return new Builder();
     }
 
     /**
      * Get a unit dataset by ID.
      */
-    public Single<Response<GetUnitDatasetQuery.Data>> getUnitDataset(String id) {
+    public Single<GetUnitDatasetQuery.Data> getUnitDataset(String id) {
 
         // GraphQL call.
         ApolloQueryCall<GetUnitDatasetQuery.Data> query = client.query(GetUnitDatasetQuery.builder().id(id).build());
 
         // Rx2 wrapper.
-        Observable<Response<GetUnitDatasetQuery.Data>> responseObservable = Rx2Apollo.from(query);
-
-        return responseObservable.firstOrError();
+        Single<Response<GetUnitDatasetQuery.Data>> response = Rx2Apollo.from(query).singleOrError();
+        return response.flatMap(dataResponse -> {
+            if (dataResponse.hasErrors()) {
+                return Single.error(new GraphQLException(dataResponse.errors()));
+            } else {
+                return Single.just(dataResponse.data());
+            }
+        });
     }
 
     /**
-     * Get a unit dataset by ID.
+     * Get a dimensional dataset by ID.
      */
-    public Single<Response<GetDimensionalDatasetQuery.Data>> getDimensionalDataset(String id) {
+    public Single<GetDimensionalDatasetQuery.Data> getDimensionalDataset(String id) {
 
         // GraphQL call.
         ApolloQueryCall<GetDimensionalDatasetQuery.Data> query = client.query(GetDimensionalDatasetQuery.builder().id(id).build());
 
         // Rx2 wrapper.
-        Observable<Response<GetDimensionalDatasetQuery.Data>> responseObservable = Rx2Apollo.from(query);
-
-        return responseObservable.firstOrError();
+        Single<Response<GetDimensionalDatasetQuery.Data>> response = Rx2Apollo.from(query).singleOrError();
+        return response.flatMap(dataResponse -> {
+            if (dataResponse.hasErrors()) {
+                return Single.error(new GraphQLException(dataResponse.errors()));
+            } else {
+                return Single.just(dataResponse.data());
+            }
+        });
     }
 
     public Single<Schema> getSchema(String datasetID) {
-        return getUnitDataset(datasetID).flatMap(dataResponse -> {
-            if (dataResponse.hasErrors()) {
-                // TODO: Define error.
-                return Single.error(new IllegalArgumentException());
-            } else {
-                return Single.just(UNIT_DATASET_SCHEMA_CONVERTER.convert(dataResponse.data()));
-            }
-        });
+        Maybe<Schema> unitSchema = getUnitDataset(datasetID)
+                .toMaybe().onErrorComplete()
+                .map(UNIT_DATASET_SCHEMA_CONVERTER::convert);
+
+        Maybe<Schema> dimensionalSchema = getDimensionalDataset(datasetID)
+                .toMaybe().onErrorComplete()
+                .map(DIMENSIONAL_DATASET_SCHEMA_CONVERTER::convert);
+
+        return Maybe.mergeDelayError(unitSchema, dimensionalSchema).firstOrError();
     }
 
     /**
@@ -86,7 +103,7 @@ public class GsimClient {
      */
     public Completable writeData(String datasetID, Flowable<GenericRecord> data, String token) {
         return getSchema(datasetID).flatMapCompletable(schema -> {
-            return dataClient.writeData(datasetID, schema, token, data);
+            return dataClient.writeData(datasetID, schema, data, token);
         });
     }
 
@@ -99,14 +116,36 @@ public class GsimClient {
         });
     }
 
+    public static class Builder {
+
+        private DataClient dataClient;
+        private Configuration configuration;
+
+        public Builder withDataClient(DataClient dataClient) {
+            this.dataClient = dataClient;
+            return this;
+        }
+
+        public Builder withConfiguration(Configuration configuration) {
+            this.configuration = configuration;
+            return this;
+        }
+
+        public GsimClient build() {
+            return new GsimClient(this);
+        }
+    }
+
     public static class Configuration {
 
+        private URL ldsUrl;
+
         public URL getLdsUrl() {
-            try {
-                return new URL("http://35.228.232.124/lds/graphql");
-            } catch (MalformedURLException e) {
-                throw new AssertionError(e);
-            }
+            return ldsUrl;
+        }
+
+        public void setLdsUrl(URL ldsUrl) {
+            this.ldsUrl = ldsUrl;
         }
     }
 }
