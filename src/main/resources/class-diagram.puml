@@ -1,0 +1,39 @@
+@startuml
+hide empty members
+package "Apollo Android" {
+    class ApolloClient
+}
+
+package "LDS GSIM Client" {
+  interface SchemaConverter {
+    convert()
+  }
+  class GsimClient {
+    +readDatasetData()
+    +writeDatasetData()
+  }
+  GsimClient o-- ApolloClient
+  SchemaConverter *-- GsimClient
+}
+
+package "LDS Data Client" {
+
+  interface BinaryBackend
+  interface FormatConverter
+
+  class DataClient {
+    readData()
+    writeData()
+    readAndConvert()
+    writeAndConvert()
+  }
+  DataClient --o GsimClient
+
+  DataClient *-- BinaryBackend
+  DataClient *-- FormatConverter
+
+  CsvConverter -up-|> FormatConverter
+  JsonConverter -up-|> FormatConverter
+}
+
+@enduml
