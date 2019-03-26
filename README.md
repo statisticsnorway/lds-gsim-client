@@ -29,4 +29,7 @@ client = GsimClient.builder()
     .withConfiguration(clientConfiguration)
     .build();
 ```
- 
+
+## Class diagram
+
+![Class diagram](http://www.plantuml.com/plantuml/proxy?src=https://raw.githubusercontent.com/statisticsnorway/lds-gsim-client/19fc00184b1645696491704c2481decb11b0d2bc/src/main/resources/class-diagram.puml)
