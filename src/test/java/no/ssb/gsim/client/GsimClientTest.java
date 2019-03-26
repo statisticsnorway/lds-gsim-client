@@ -89,9 +89,18 @@ public class GsimClientTest {
             }
         }
 
-        client.writeData(datasetID, Flowable.fromIterable(records), "").blockingAwait();
-        List<GenericRecord> readRecords = client.readDatasetData(datasetID, null).toList().blockingGet();
+        // Write data
+        Completable written = client.writeData(datasetID, Flowable.fromIterable(records), "token");
 
-        assertThat(readRecords).containsExactlyElementsOf(records);
+        // Wait.
+        written.blockingAwait();
+
+        // Read data
+        Flowable<GenericRecord> recordsFlowable = client.readDatasetData(datasetID, "token");
+
+        // Wait.
+        List<GenericRecord> recordsList = recordsFlowable.toList().blockingGet();
+
+        assertThat(recordsList).containsExactlyElementsOf(records);
     }
 }
