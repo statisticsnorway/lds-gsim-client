@@ -1,7 +1,21 @@
 @startuml
+
+!includeurl https://raw.githubusercontent.com/statisticsnorway/lds-gsim-client/master/src/main/resources/class-diagram.pumlhttps://raw.githubusercontent.com/statisticsnorway/lds-data-client/master/lds-data-client/src/main/resources/class-diagram.puml
+
+hide BinaryBackend
+hide FormatConverter
+hide CsvConverter
+hide JsonConverter
+show DataClient
+
 hide empty members
+
 package "Apollo Android" {
     class ApolloClient
+}
+
+package "LDS Data Client" {
+    class DataClient
 }
 
 package "LDS GSIM Client" {
@@ -9,31 +23,15 @@ package "LDS GSIM Client" {
     convert()
   }
   class GsimClient {
-    +readDatasetData()
-    +writeDatasetData()
+    -configuration
+    +readDatasetData(id, token)
+    +writeDatasetData(id, records, token)
+    +getDataset(id)
   }
-  GsimClient o-- ApolloClient
+  GsimClient o-left- ApolloClient
   SchemaConverter *-- GsimClient
-}
 
-package "LDS Data Client" {
-
-  interface BinaryBackend
-  interface FormatConverter
-
-  class DataClient {
-    readData()
-    writeData()
-    readAndConvert()
-    writeAndConvert()
-  }
   DataClient --o GsimClient
-
-  DataClient *-- BinaryBackend
-  DataClient *-- FormatConverter
-
-  CsvConverter -up-|> FormatConverter
-  JsonConverter -up-|> FormatConverter
 }
 
 @enduml
