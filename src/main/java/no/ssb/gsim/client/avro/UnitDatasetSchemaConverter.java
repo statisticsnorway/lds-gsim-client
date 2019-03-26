@@ -60,7 +60,8 @@ public class UnitDatasetSchemaConverter implements SchemaConverter<GetUnitDatase
                 fields.addAll(convertIdentifiers(unitComponents));
                 fields.addAll(convertMeasures(unitComponents));
                 fields.addAll(convertAttributes(unitComponents));
-                return Schema.createRecord(fields);
+                return Schema.createRecord("unitDataset", "GSIM Unit dataset",
+                        "no.ssb.gsim.dataset", false, fields);
             }
         } catch (RuntimeException re) {
             throw new StructureConversionException(re);

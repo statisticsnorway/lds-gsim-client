@@ -112,7 +112,7 @@ public class GsimClient {
      */
     public Flowable<GenericRecord> readDatasetData(String datasetID, String token) {
         return getSchema(datasetID).flatMapPublisher(schema -> {
-            return dataClient.readData(datasetID, schema, token);
+            return dataClient.readData(datasetID, schema, token, null);
         });
     }
 

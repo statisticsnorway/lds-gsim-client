@@ -3,19 +3,18 @@ package no.ssb.gsim.client;
 import io.reactivex.Completable;
 import io.reactivex.Flowable;
 import no.ssb.lds.data.client.DataClient;
+import no.ssb.lds.data.client.LocalBackend;
+import no.ssb.lds.data.client.ParquetProvider;
 import org.apache.avro.Schema;
 import org.apache.avro.generic.GenericData;
 import org.apache.avro.generic.GenericRecord;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.net.URL;
+import java.nio.file.Files;
 import java.util.ArrayList;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -25,39 +24,25 @@ public class GsimClientTest {
 
     @Before
     public void setUp() throws Exception {
-        DataClient.Configuration configuration = new DataClient.Configuration(null);
-        DataClient noOpDataClient = new DataClient(configuration) {
+        ParquetProvider.Configuration parquetConfiguration = new ParquetProvider.Configuration();
+        parquetConfiguration.setPageSize(8 * 1024 * 1024);
+        parquetConfiguration.setRowGroupSize(64 * 1024 * 1024);
 
-            Map<String, List<GenericRecord>> data = new LinkedHashMap<>();
+        DataClient.Configuration dataClientConfiguration = new DataClient.Configuration();
 
-            @Override
-            public Completable writeData(String id, Schema schema, Flowable<GenericRecord> records, String token) {
-                return records.toList().flatMapCompletable(genericRecords -> {
-                    this.data.put(id, genericRecords);
-                    return Completable.complete();
-                });
-            }
+        var prefix = Files.createTempDirectory("lds-data-client").toString();
+        dataClientConfiguration.setLocation(prefix);
 
-            @Override
-            public Completable convertAndWrite(String s, Schema schema, InputStream inputStream, String s1, String s2) {
-                throw new UnsupportedOperationException();
-            }
-
-            @Override
-            public OutputStream readAndConvert(String s, Schema schema, String s1, String s2) {
-                throw new UnsupportedOperationException();
-            }
-
-            @Override
-            public Flowable<GenericRecord> readData(String id, Schema schema, String token) {
-                return Flowable.fromIterable(this.data.get(id));
-            }
-        };
+        var dataClient = DataClient.builder()
+                .withParquetProvider(new ParquetProvider(parquetConfiguration))
+                .withBinaryBackend(new LocalBackend(prefix))
+                .withConfiguration(dataClientConfiguration)
+                .build();
 
         GsimClient.Configuration clientConfiguration = new GsimClient.Configuration();
         clientConfiguration.setLdsUrl(new URL("http://35.228.232.124/lds/graphql/"));
-        client =         GsimClient.builder()
-                .withDataClient(noOpDataClient)
+        client = GsimClient.builder()
+                .withDataClient(dataClient)
                 .withConfiguration(clientConfiguration)
                 .build();
     }
