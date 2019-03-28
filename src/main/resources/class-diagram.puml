@@ -6,7 +6,11 @@ hide BinaryBackend
 hide FormatConverter
 hide CsvConverter
 hide JsonConverter
+hide LDS Data Hadoop
+hide LDS Data GCS
+
 show DataClient
+
 
 hide empty members
 
