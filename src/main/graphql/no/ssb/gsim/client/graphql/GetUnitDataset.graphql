@@ -16,6 +16,30 @@ query GetUnitDataset($id: ID!) {
     }
 }
 
+query GetInstanceVariable($id: ID!) {
+    InstanceVariableById(id: $id) {
+        id
+        sourceName
+        sourcePath
+        representedVariable {
+            id
+        }
+    }
+}
+
+query GetInstanceVariables {
+    InstanceVariable {
+        edges {
+            node {
+                id
+                representedVariable {
+                    id
+                }
+            }
+        }
+    }
+}
+
 fragment UnitVariableType on RepresentedVariable {
     substantiveValueDomain {
         ... on DescribedValueDomain {
@@ -34,6 +58,7 @@ fragment UnitComponents on LogicalRecord {
             node {
                 shortName
                 representedVariable {
+                    id
                     ...UnitVariableType
                 }
             }
@@ -44,6 +69,7 @@ fragment UnitComponents on LogicalRecord {
             node {
                 shortName
                 representedVariable {
+                    id
                     ...UnitVariableType
                 }
             }
@@ -54,6 +80,7 @@ fragment UnitComponents on LogicalRecord {
             node {
                 shortName
                 representedVariable {
+                    id
                     ...UnitVariableType
                 }
             }

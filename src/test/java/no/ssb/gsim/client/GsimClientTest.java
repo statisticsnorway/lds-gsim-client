@@ -35,7 +35,7 @@ public class GsimClientTest {
 
         var dataClient = DataClient.builder()
                 .withParquetProvider(new ParquetProvider(parquetConfiguration))
-                .withBinaryBackend(new LocalBackend(prefix))
+                .withBinaryBackend(new LocalBackend(""))
                 .withConfiguration(dataClientConfiguration)
                 .build();
 
@@ -54,7 +54,7 @@ public class GsimClientTest {
         Schema schema = client.getSchema(datasetID).blockingGet();
 
         List<GenericRecord> records = new ArrayList<>();
-        for (int i = 0; i < 1000; i++) {
+        for (int i = 0; i < 10; i++) {
             records.add(new GenericData.Record(schema));
         }
         for (Schema.Field field : schema.getFields()) {

@@ -11,6 +11,8 @@ import io.reactivex.Single;
 import no.ssb.gsim.client.avro.DimensionalDatasetSchemaConverter;
 import no.ssb.gsim.client.avro.UnitDatasetSchemaConverter;
 import no.ssb.gsim.client.graphql.GetDimensionalDatasetQuery;
+import no.ssb.gsim.client.graphql.GetInstanceVariableQuery;
+import no.ssb.gsim.client.graphql.GetInstanceVariablesQuery;
 import no.ssb.gsim.client.graphql.GetUnitDatasetQuery;
 import no.ssb.lds.data.client.DataClient;
 import okhttp3.HttpUrl;
@@ -20,6 +22,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.net.URL;
+import java.util.List;
 import java.util.Objects;
 
 /**
@@ -65,6 +68,53 @@ public class GsimClient {
                 return Single.just(dataResponse.data());
             }
         });
+    }
+
+    public Single<GetInstanceVariableQuery.Data> getInstanceVariableQuery(String id) {
+        // GraphQL call.
+        ApolloQueryCall<GetInstanceVariableQuery.Data> query = client.query(GetInstanceVariableQuery.builder().id(id).build());
+
+        // Rx2 wrapper.
+        Single<Response<GetInstanceVariableQuery.Data>> response = Rx2Apollo.from(query).singleOrError();
+        return response.flatMap(dataResponse -> {
+            if (dataResponse.hasErrors()) {
+                return Single.error(new GraphQLException(dataResponse.errors()));
+            } else {
+                return Single.just(dataResponse.data());
+            }
+        });
+    }
+
+    public Flowable<GetInstanceVariablesQuery.Node> getInstanceVariablesQuery() {
+        // GraphQL call.
+        ApolloQueryCall<GetInstanceVariablesQuery.Data> query =
+                client.query(GetInstanceVariablesQuery.builder().build());
+
+        // Rx2 wrapper.
+        Single<GetInstanceVariablesQuery.Data> response = Rx2Apollo.from(query)
+                .singleOrError()
+                .flatMap(dataResponse -> {
+                    if (dataResponse.hasErrors()) {
+                        return Single.error(new GraphQLException(dataResponse.errors()));
+                    } else {
+                        return Single.just(dataResponse.data());
+                    }
+                });
+
+
+        Flowable<GetInstanceVariablesQuery.Node> edgesFlowable = response.flattenAsFlowable(data -> {
+            List<GetInstanceVariablesQuery.Edge> edges = data.InstanceVariable().edges();
+            return edges;
+        }).map(edge -> edge.node());
+        return edgesFlowable;
+//                .
+//        return response.flatMap(dataResponse -> {
+//            if (dataResponse.hasErrors()) {
+//                return Single.error(new GraphQLException(dataResponse.errors()));
+//            } else {
+//                return Single.just(dataResponse.data());
+//            }
+//        });
     }
 
     /**
