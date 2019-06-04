@@ -6,10 +6,10 @@
       "unitDataStructure": {
         "__typename": "UnitDataStructure",
         "logicalRecords": {
-          "__typename": "UnitDataStructureLogicalRecordConnection",
+          "__typename": "LogicalRecordConnection",
           "edges": [
             {
-              "__typename": "UnitDataStructureLogicalRecordEdge",
+              "__typename": "LogicalRecordEdge",
               "node": {
                 "__typename": "LogicalRecord",
                 "name": [
@@ -18,14 +18,22 @@
                     "languageText": "Person with income record"
                   }
                 ],
-                "identifierComponents": {
-                  "__typename": "LogicalRecordIdentifierComponentConnection",
+                "instanceVariables": {
+                  "__typename": "InstanceVariableConnection",
                   "edges": [
                     {
-                      "__typename": "LogicalRecordIdentifierComponentEdge",
+                      "__typename": "InstanceVariableEdge",
                       "node": {
-                        "__typename": "IdentifierComponent",
+                        "__typename": "InstanceVariable",
+                        "dataStructureComponentType": "IDENTIFIER",
                         "shortName": "PERSON_ID",
+                        "dataStructureComponentRole": "ENTITY",
+                        "description": [
+                          {
+                            "__typename": "MultilingualText",
+                            "languageText": "National identifier number for person"
+                          }
+                        ],
                         "representedVariable": {
                           "__typename": "RepresentedVariable",
                           "substantiveValueDomain": {
@@ -34,17 +42,20 @@
                           }
                         }
                       }
-                    }
-                  ]
-                },
-                "measureComponents": {
-                  "__typename": "LogicalRecordMeasureComponentConnection",
-                  "edges": [
+                    },
                     {
-                      "__typename": "LogicalRecordMeasureComponentEdge",
+                      "__typename": "InstanceVariableEdge",
                       "node": {
-                        "__typename": "MeasureComponent",
+                        "__typename": "InstanceVariable",
+                        "dataStructureComponentType": "MEASURE",
                         "shortName": "INCOME",
+                        "dataStructureComponentRole": null,
+                        "description": [
+                          {
+                            "__typename": "MultilingualText",
+                            "languageText": "The person's annual income"
+                          }
+                        ],
                         "representedVariable": {
                           "__typename": "RepresentedVariable",
                           "substantiveValueDomain": {
@@ -55,25 +66,41 @@
                       }
                     },
                     {
-                      "__typename": "LogicalRecordMeasureComponentEdge",
+                      "__typename": "InstanceVariableEdge",
                       "node": {
-                        "__typename": "MeasureComponent",
-                        "shortName": "GENDER",
+                        "__typename": "InstanceVariable",
+                        "dataStructureComponentType": "ATTRIBUTE",
+                        "shortName": "DATA_QUALITY",
+                        "dataStructureComponentRole": null,
+                        "description": [
+                          {
+                            "__typename": "MultilingualText",
+                            "languageText": "Classification of the data quality."
+                          }
+                        ],
                         "representedVariable": {
                           "__typename": "RepresentedVariable",
                           "substantiveValueDomain": {
                             "__typename": "EnumeratedValueDomain",
                             "dataType": "STRING",
-                            "klassUrl": "https://www.ssb.no/klass/klassifikasjoner/2"
+                            "klassUrl": "https://www.ssb.no/klass/klassifikasjoner/?"
                           }
                         }
                       }
                     },
                     {
-                      "__typename": "LogicalRecordMeasureComponentEdge",
+                      "__typename": "InstanceVariableEdge",
                       "node": {
-                        "__typename": "MeasureComponent",
+                        "__typename": "InstanceVariable",
+                        "dataStructureComponentType": "MEASURE",
                         "shortName": "MARITAL_STATUS",
+                        "dataStructureComponentRole": null,
+                        "description": [
+                          {
+                            "__typename": "MultilingualText",
+                            "languageText": "The person's marital status"
+                          }
+                        ],
                         "representedVariable": {
                           "__typename": "RepresentedVariable",
                           "substantiveValueDomain": {
@@ -85,10 +112,18 @@
                       }
                     },
                     {
-                      "__typename": "LogicalRecordMeasureComponentEdge",
+                      "__typename": "InstanceVariableEdge",
                       "node": {
-                        "__typename": "MeasureComponent",
+                        "__typename": "InstanceVariable",
+                        "dataStructureComponentType": "MEASURE",
                         "shortName": "MUNICIPALITY",
+                        "dataStructureComponentRole": null,
+                        "description": [
+                          {
+                            "__typename": "MultilingualText",
+                            "languageText": "The person's residential municipality"
+                          }
+                        ],
                         "representedVariable": {
                           "__typename": "RepresentedVariable",
                           "substantiveValueDomain": {
@@ -98,23 +133,26 @@
                           }
                         }
                       }
-                    }
-                  ]
-                },
-                "attributeComponents": {
-                  "__typename": "LogicalRecordAttributeComponentConnection",
-                  "edges": [
+                    },
                     {
-                      "__typename": "LogicalRecordAttributeComponentEdge",
+                      "__typename": "InstanceVariableEdge",
                       "node": {
-                        "__typename": "AttributeComponent",
-                        "shortName": "DATA_QUALITY",
+                        "__typename": "InstanceVariable",
+                        "dataStructureComponentType": "MEASURE",
+                        "shortName": "GENDER",
+                        "dataStructureComponentRole": null,
+                        "description": [
+                          {
+                            "__typename": "MultilingualText",
+                            "languageText": "The person's gender"
+                          }
+                        ],
                         "representedVariable": {
                           "__typename": "RepresentedVariable",
                           "substantiveValueDomain": {
                             "__typename": "EnumeratedValueDomain",
                             "dataType": "STRING",
-                            "klassUrl": "https://www.ssb.no/klass/klassifikasjoner/?"
+                            "klassUrl": "https://www.ssb.no/klass/klassifikasjoner/2"
                           }
                         }
                       }
