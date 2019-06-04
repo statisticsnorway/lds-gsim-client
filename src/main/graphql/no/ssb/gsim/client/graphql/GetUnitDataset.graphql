@@ -16,6 +16,24 @@ query GetUnitDataset($id: ID!) {
     }
 }
 
+fragment UnitComponents on LogicalRecord {
+    instanceVariables {
+        edges {
+            node {
+                dataStructureComponentType
+                shortName
+                dataStructureComponentRole
+                description {
+                    languageText
+                }
+                representedVariable {
+                    ...UnitVariableType
+                }
+            }
+        }
+    }
+}
+
 fragment UnitVariableType on RepresentedVariable {
     substantiveValueDomain {
         ... on DescribedValueDomain {
@@ -24,39 +42,6 @@ fragment UnitVariableType on RepresentedVariable {
         ... on EnumeratedValueDomain {
             dataType
             klassUrl
-        }
-    }
-}
-
-fragment UnitComponents on LogicalRecord {
-    identifierComponents {
-        edges {
-            node {
-                shortName
-                representedVariable {
-                    ...UnitVariableType
-                }
-            }
-        }
-    }
-    measureComponents {
-        edges {
-            node {
-                shortName
-                representedVariable {
-                    ...UnitVariableType
-                }
-            }
-        }
-    }
-    attributeComponents {
-        edges {
-            node {
-                shortName
-                representedVariable {
-                    ...UnitVariableType
-                }
-            }
         }
     }
 }
