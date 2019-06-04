@@ -40,7 +40,7 @@ public class GsimClientTest {
                 .build();
 
         GsimClient.Configuration clientConfiguration = new GsimClient.Configuration();
-        clientConfiguration.setLdsUrl(new URL("http://35.228.232.124/lds/graphql/"));
+        clientConfiguration.setLdsUrl(new URL("http://localhost:9090/graphql/"));
         client = GsimClient.builder()
                 .withDataClient(dataClient)
                 .withConfiguration(clientConfiguration)
@@ -54,7 +54,7 @@ public class GsimClientTest {
         Schema schema = client.getSchema(datasetID).blockingGet();
 
         List<GenericRecord> records = new ArrayList<>();
-        for (int i = 0; i < 1000; i++) {
+        for (int i = 0; i < 100; i++) {
             records.add(new GenericData.Record(schema));
         }
         for (Schema.Field field : schema.getFields()) {
