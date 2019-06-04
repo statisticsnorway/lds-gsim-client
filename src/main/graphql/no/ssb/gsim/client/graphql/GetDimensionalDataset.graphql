@@ -1,83 +1,33 @@
 query GetDimensionalDataset($id: ID!) {
     DimensionalDataSetById(id: $id) {
         dimensionalDataStructure {
-            ...DimensionalComponents
+            instanceVariables {
+                edges {
+                    node {
+                        dataStructureComponentType
+                        shortName
+                        dataStructureComponentRole
+                        description {
+                            languageText
+                        }
+                        representedVariable {
+                            ...UnitVariableType
+                        }
+                    }
+                }
+            }
         }
     }
 }
 
-fragment DimensionalIdentifiers on IdentifierComponent {
-    isUnique
-    shortName
-    representedVariable {
-        substantiveValueDomain {
-            ... on DescribedValueDomain {
-                dataType
-            }
-            ... on EnumeratedValueDomain {
-                dataType
-            }
+fragment UnitVariableType on RepresentedVariable {
+    substantiveValueDomain {
+        ... on DescribedValueDomain {
+            dataType
         }
-    }
-    description {
-        languageText
-    }
-}
-
-fragment DimensionalMeasures on MeasureComponent {
-    shortName
-    representedVariable {
-        substantiveValueDomain {
-            ... on DescribedValueDomain {
-                dataType
-            }
-            ... on EnumeratedValueDomain {
-                dataType
-            }
-        }
-    }
-    description {
-        languageText
-    }
-}
-
-fragment DimensionalAttributes on AttributeComponent {
-    shortName
-    representedVariable {
-        substantiveValueDomain {
-            ... on DescribedValueDomain {
-                dataType
-            }
-            ... on EnumeratedValueDomain {
-                dataType
-            }
-        }
-    }
-    description {
-        languageText
-    }
-}
-
-fragment DimensionalComponents on DimensionalDataStructure {
-    identifierComponents {
-        edges {
-            node {
-                ...DimensionalIdentifiers
-            }
-        }
-    }
-    measureComponents {
-        edges {
-            node {
-                ...DimensionalMeasures
-            }
-        }
-    }
-    attributeComponents {
-        edges {
-            node {
-                ...DimensionalAttributes
-            }
+        ... on EnumeratedValueDomain {
+            dataType
+            klassUrl
         }
     }
 }
