@@ -27,21 +27,17 @@ fragment UnitComponents on LogicalRecord {
                     languageText
                 }
                 representedVariable {
-                    ...UnitVariableType
+                    substantiveValueDomain {
+                        ... on DescribedValueDomain {
+                            dataType
+                        }
+                        ... on EnumeratedValueDomain {
+                            dataType
+                            klassUrl
+                        }
+                    }
                 }
             }
-        }
-    }
-}
-
-fragment UnitVariableType on RepresentedVariable {
-    substantiveValueDomain {
-        ... on DescribedValueDomain {
-            dataType
-        }
-        ... on EnumeratedValueDomain {
-            dataType
-            klassUrl
         }
     }
 }

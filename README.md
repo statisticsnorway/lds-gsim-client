@@ -48,6 +48,22 @@ Flowable<GenericRecord> recordsFlowable = client.readDatasetData(datasetID, "tok
 List<GenericRecord> recordsList = recordsFlowable.toList().blockingGet();
 ```
 
+## Schema update
+
+Download the updated schema from the LDS `/graphql` endpoint.
+ 
+```
+apollo schema:download --endpoint=http://[lds.server]/graphql src/main/graphql/no/ssb/gsim/client/graphql/schema.json
+```
+
+Recompile the project 
+
+```
+gradle build
+```
+
+Fix the compilation errors if any.
+
 ## Class diagram
 
 ![Class diagram](http://www.plantuml.com/plantuml/proxy?src=https://raw.githubusercontent.com/statisticsnorway/lds-gsim-client/master/src/main/resources/class-diagram.puml)
