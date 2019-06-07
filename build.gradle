@@ -15,6 +15,7 @@ plugins {
 }
 
 apply plugin: 'com.apollographql.android'
+apply plugin: 'maven'
 
 repositories {
     mavenLocal()
