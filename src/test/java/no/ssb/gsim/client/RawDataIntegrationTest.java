@@ -60,6 +60,10 @@ public class RawDataIntegrationTest {
         Flowable<GenericRecordWithId> recordData = data.map(rawdataMessage -> {
             System.out.printf("[%s]\t\tConverting %s\n", Thread.currentThread(), rawdataMessage.id());
 
+            // This is the conversion process. One could extract this in a class
+            // to make it statefull/clearer.
+            // RawdataMessage -> GenericRecordWithId
+
             GenericData.Record record = new GenericData.Record(schema);
 
             String person_id = new String(rawdataMessage.content().get("id"));
@@ -75,13 +79,28 @@ public class RawDataIntegrationTest {
             return new GenericRecordWithId(record, rawdataMessage.id());
         });
 
-        // Write in unbounded dataset.
+        // Write unbounded in data set.
+        // Writes to disk every hour of every 10 elements, whichever comes first.
         Observable<GenericRecordWithId> feedBack = gsimClient.writeDatasetUnbounded(
-                "b9c10b86-5867-4270-b56e-ee7439fe381e",
-                recordData, 1, TimeUnit.HOURS, 10, ""
+                "b9c10b86-5867-4270-b56e-ee7439fe381e", recordData,
+                1, TimeUnit.HOURS,
+                10, "token"
         );
 
-        // Add some data from a separate thread
+        // Start producing data from a separate thread. This would typically on the other
+        // end of a message queue.
+        startProducingData(producer);
+
+        // Start the conversion process. This will continue until the consumer stops or an exception is
+        // thrown somewhere in the conversion process. Use subscribe()/doOnError() methods to handle exceptions.
+        feedBack.observeOn(Schedulers.newThread()).blockingForEach(record -> {
+            System.out.printf("[%s]\t\tAck up to %s\n", Thread.currentThread(), record.getId());
+            consumer.acknowledgeAccumulative(record.getId());
+        });
+
+    }
+
+    private void startProducingData(RawdataProducer producer) {
         new Thread(() -> {
             try {
                 List<String> ids = new ArrayList<>();
@@ -108,13 +127,6 @@ public class RawDataIntegrationTest {
                 }
             }
         }).start();
-
-        feedBack.observeOn(Schedulers.newThread())
-                .blockingForEach(record -> {
-                    System.out.printf("[%s]\t\tAck up to %s\n", Thread.currentThread(), record.getId());
-                    consumer.acknowledgeAccumulative(record.getId());
-                });
-
     }
 
 }
