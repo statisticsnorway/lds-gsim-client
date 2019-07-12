@@ -4,10 +4,7 @@ import com.apollographql.apollo.ApolloClient;
 import com.apollographql.apollo.ApolloQueryCall;
 import com.apollographql.apollo.api.Response;
 import com.apollographql.apollo.rx2.Rx2Apollo;
-import io.reactivex.Completable;
-import io.reactivex.Flowable;
-import io.reactivex.Maybe;
-import io.reactivex.Single;
+import io.reactivex.*;
 import no.ssb.gsim.client.avro.DimensionalDatasetSchemaConverter;
 import no.ssb.gsim.client.avro.UnitDatasetSchemaConverter;
 import no.ssb.gsim.client.graphql.GetDimensionalDatasetQuery;
@@ -21,6 +18,7 @@ import org.slf4j.LoggerFactory;
 
 import java.net.URL;
 import java.util.Objects;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Gsim Java client.
@@ -99,11 +97,27 @@ public class GsimClient {
     }
 
     /**
+     * Write unbounded data to a dataset.
+     */
+    public <R extends GenericRecord> Observable<R> writeDatasetUnbounded(String datasetID, Flowable<R> data, String token) {
+        return writeDatasetUnbounded(datasetID, data, 1, TimeUnit.DAYS, 5_000_000, token);
+    }
+
+    public <R extends GenericRecord> Observable<R> writeDatasetUnbounded(
+            String datasetID, Flowable<R> data, long timeWindow, TimeUnit unit, long countWindow,
+            String token
+    ) {
+        return getSchema(datasetID).flatMapObservable(schema -> {
+            return dataClient.writeDataUnbounded(() -> String.format("%s/%s", datasetID, System.nanoTime()), schema, data, timeWindow, unit, countWindow, token);
+        });
+    }
+
+    /**
      * Write a the {@link GenericRecord}s for a dataset.
      */
     public Completable writeData(String datasetID, Flowable<GenericRecord> data, String token) {
         return getSchema(datasetID).flatMapCompletable(schema -> {
-            return dataClient.writeData(datasetID, schema, data, token);
+            return dataClient.writeData(datasetID, schema, data, token).ignoreElements();
         });
     }
 

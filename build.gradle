@@ -64,13 +64,16 @@ dependencies {
     api group: 'org.apache.avro', name: 'avro', version: '1.8.2'
     api group: 'javax.annotation', name: 'javax.annotation-api', version: '1.2'
 
-    implementation group: 'no.ssb.lds.data', name: 'lds-data-client', version: '0.0.1-SNAPSHOT'
+    implementation group: 'no.ssb.lds.data', name: 'lds-data-client', version: '0.0.2-SNAPSHOT'
     implementation group: 'com.squareup.okhttp3', name: 'okhttp', version: '3.14.0'
     implementation group: 'com.google.guava', name: 'guava', version: '27.0.1-jre'
     implementation group: 'ch.qos.logback', name: 'logback-classic', version: '1.2.3'
 
     testImplementation 'junit:junit:4.12'
     testImplementation 'org.assertj:assertj-core:3.11.1'
+    testImplementation group: 'com.squareup.okhttp3', name: 'mockwebserver', version: '3.14.0'
+
+    testImplementation 'no.ssb.rawdata:rawdata-client-api:0.14-SNAPSHOT'
 }
 
 
