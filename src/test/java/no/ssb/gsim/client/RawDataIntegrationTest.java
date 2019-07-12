@@ -66,7 +66,7 @@ public class RawDataIntegrationTest {
 
             GenericData.Record record = new GenericData.Record(schema);
 
-            String person_id = new String(rawdataMessage.content().get("id"));
+            String person_id = new String(rawdataMessage.content().get("person_id"));
             record.put("PERSON_ID", person_id);
             record.put("DATA_QUALITY", person_id);
             record.put("MARITAL_STATUS", person_id);
@@ -107,7 +107,7 @@ public class RawDataIntegrationTest {
                 for (int i = 1; i <= 1000; i++) {
                     producer.buffer(producer.builder()
                             .externalId("external-id-" + i)
-                            .put("id", ("id-" + i).getBytes())
+                            .put("person_id", ("id-" + i).getBytes())
                             .put("income", Integer.toString(i).getBytes())
                     );
                     ids.add("external-id-" + i);
