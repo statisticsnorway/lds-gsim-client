@@ -43,7 +43,7 @@ task javadocJar(type: Jar) {
 }
 
 group = "no.ssb.lds"
-version = "0.1.0-SNAPSHOT"
+version = "0.0.2-SNAPSHOT"
 
 publishing {
     publications {
