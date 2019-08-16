@@ -1,21 +1,20 @@
 package no.ssb.gsim.client;
 
-import no.ssb.rawdata.api.RawdataMessageId;
 import org.apache.avro.Schema;
 import org.apache.avro.generic.GenericRecord;
 
 class GenericRecordWithId implements GenericRecord {
 
     private final GenericRecord delegate;
-    private final RawdataMessageId id;
+    private final String position;
 
-    GenericRecordWithId(GenericRecord delegate, RawdataMessageId id) {
+    GenericRecordWithId(GenericRecord delegate, String position) {
         this.delegate = delegate;
-        this.id = id;
+        this.position = position;
     }
 
-    public RawdataMessageId getId() {
-        return id;
+    public String getPosition() {
+        return position;
     }
 
     @Override

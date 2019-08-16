@@ -43,22 +43,28 @@ public class RawDataIntegrationTest {
         mockWebServer.enqueue(unitDatasetResponse);
         mockWebServer.enqueue(unitDatasetResponse);
 
-        RawdataConsumer consumer = rawdataClient.consumer("test-topic", "consumer");
+        // Does the dataset has data?
+        // If yes, get last
+
+
+        RawdataConsumer consumer = rawdataClient.consumer("test-topic");
         RawdataProducer producer = rawdataClient.producer("test-topic");
 
         // Convert the consumer to flowable.
         Flowable<RawdataMessage> data = Flowable.<Single<RawdataMessage>>generate(emitter -> {
             emitter.onNext(Single.fromFuture(consumer.receiveAsync()));
         }).concatMapSingle(single -> single).doOnNext(rawdataMessage -> {
-            System.out.printf("[%s]\t\tGot raw message %s\n", Thread.currentThread(), rawdataMessage.id());
-        }).subscribeOn(Schedulers.io());
+            System.out.printf("[%s]\t\tGot raw message %s\n", Thread.currentThread(), rawdataMessage);
+        });//.subscribeOn(Schedulers.trampoline());
 
         // Get the schema so we can create the records.
-        Schema schema = gsimClient.getSchema("b9c10b86-5867-4270-b56e-ee7439fe381e").blockingGet();
+        Schema schema = gsimClient.getSchema("b9c10b86-5867-4270-b56e-ee7439fe381e")
+                .observeOn(Schedulers.trampoline())
+                .blockingGet();
 
         // Convert the RawdataMessage to GenericRecord.
         Flowable<GenericRecordWithId> recordData = data.map(rawdataMessage -> {
-            System.out.printf("[%s]\t\tConverting %s\n", Thread.currentThread(), rawdataMessage.id());
+            System.out.printf("[%s]\t\tConverting %s\n", Thread.currentThread(), rawdataMessage);
 
             // This is the conversion process. One could extract this in a class
             // to make it statefull/clearer.
@@ -66,17 +72,17 @@ public class RawDataIntegrationTest {
 
             GenericData.Record record = new GenericData.Record(schema);
 
-            String person_id = new String(rawdataMessage.content().get("person_id"));
+            String person_id = new String(rawdataMessage.get("person_id"));
             record.put("PERSON_ID", person_id);
             record.put("DATA_QUALITY", person_id);
             record.put("MARITAL_STATUS", person_id);
             record.put("MUNICIPALITY", person_id);
             record.put("GENDER", person_id);
 
-            Integer income = Integer.parseInt(new String(rawdataMessage.content().get("income")));
+            Integer income = Integer.parseInt(new String(rawdataMessage.get("income")));
             record.put("INCOME", income);
 
-            return new GenericRecordWithId(record, rawdataMessage.id());
+            return new GenericRecordWithId(record, rawdataMessage.position());
         });
 
         // Write unbounded in data set.
@@ -93,9 +99,8 @@ public class RawDataIntegrationTest {
 
         // Start the conversion process. This will continue until the consumer stops or an exception is
         // thrown somewhere in the conversion process. Use subscribe()/doOnError() methods to handle exceptions.
-        feedBack.observeOn(Schedulers.newThread()).blockingForEach(record -> {
-            System.out.printf("[%s]\t\tAck up to %s\n", Thread.currentThread(), record.getId());
-            consumer.acknowledgeAccumulative(record.getId());
+        feedBack.blockingForEach(record -> {
+            System.out.printf("[%s]\t\tWritten up to %s\n", Thread.currentThread(), record.getPosition());
         });
 
     }
@@ -106,7 +111,7 @@ public class RawDataIntegrationTest {
                 List<String> ids = new ArrayList<>();
                 for (int i = 1; i <= 1000; i++) {
                     producer.buffer(producer.builder()
-                            .externalId("external-id-" + i)
+                            .position("external-id-" + i)
                             .put("person_id", ("id-" + i).getBytes())
                             .put("income", Integer.toString(i).getBytes())
                     );

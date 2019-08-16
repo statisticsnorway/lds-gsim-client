@@ -16,6 +16,7 @@ import org.apache.avro.generic.GenericRecord;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
 import java.net.URL;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
@@ -116,9 +117,22 @@ public class GsimClient {
      * Write a the {@link GenericRecord}s for a dataset.
      */
     public Completable writeData(String datasetID, Flowable<GenericRecord> data, String token) {
-        return getSchema(datasetID).flatMapCompletable(schema -> {
-            return dataClient.writeData(datasetID, schema, data, token).ignoreElements();
+        return Completable.defer(() -> {
+            DataWriter dataWriter = writeData(datasetID, token);
+            return data.doAfterNext(record -> dataWriter.save(record))
+                    .doOnComplete(() -> dataWriter.close())
+                    .doOnError(throwable -> dataWriter.cancel())
+                    .ignoreElements();
         });
+    }
+
+    /**
+     * Write a the {@link GenericRecord}s for a dataset.
+     */
+    public DataWriter writeData(String datasetID, String token) throws IOException {
+        Schema schema = getSchema(datasetID).blockingGet();
+        DataClient.DataWriter dataClientWriter = dataClient.writeData(datasetID, schema, token);
+        return new DataWriter(datasetID, schema, dataClientWriter);
     }
 
     /**
@@ -160,6 +174,42 @@ public class GsimClient {
 
         public void setLdsUrl(URL ldsUrl) {
             this.ldsUrl = ldsUrl;
+        }
+    }
+
+    /**
+     * Writer abstraction.
+     */
+    public class DataWriter implements AutoCloseable {
+
+        private final DataClient.DataWriter delegate;
+
+        private DataWriter(String datasetId, Schema schema, DataClient.DataWriter dataClientWriter) throws IOException {
+            this.delegate = dataClientWriter;
+        }
+
+        /**
+         * Push down a generic record.
+         * <p>
+         * Note that the record might be buffered. Calling {@link #close()} after this method
+         * guaranties that the given record is written.
+         *
+         * @param record the record to save.
+         */
+        public void save(GenericRecord record) throws IOException {
+            delegate.save(record);
+        }
+
+        public void cancel() throws IOException {
+            delegate.cancel();
+        }
+
+        /**
+         * Write all buffered records and update the metadata in LDS.
+         */
+        @Override
+        public void close() throws IOException {
+            delegate.close();
         }
     }
 }

@@ -73,7 +73,7 @@ dependencies {
     testImplementation 'org.assertj:assertj-core:3.11.1'
     testImplementation group: 'com.squareup.okhttp3', name: 'mockwebserver', version: '3.14.0'
 
-    testImplementation 'no.ssb.rawdata:rawdata-client-api:0.14-SNAPSHOT'
+    testImplementation 'no.ssb.rawdata:rawdata-client-api:0.17'
 }
 
 
