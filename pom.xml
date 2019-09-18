@@ -37,12 +37,8 @@
             <id>ssb-bip</id>
             <repositories>
                 <repository>
-                    <id>ssb-bip-releases</id>
-                    <url>https://nexus.infra.ssbmod.net/repository/maven-releases/</url>
-                </repository>
-                <repository>
-                    <id>ssb-bip-snapshots</id>
-                    <url>https://nexus.infra.ssbmod.net/repository/maven-snapshots/</url>
+                    <id>ssb-bip-public</id>
+                    <url>https://nexus.infra.ssbmod.net/repository/maven-public/</url>
                 </repository>
             </repositories>
             <distributionManagement>
