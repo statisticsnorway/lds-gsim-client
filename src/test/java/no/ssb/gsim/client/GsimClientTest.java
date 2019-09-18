@@ -118,12 +118,8 @@ public class GsimClientTest {
     public void testWriteData() throws IOException {
 
         setupMockServer(mockWebServer);
-        setupMockServer(mockWebServer);
-        setupMockServer(mockWebServer);
-        setupMockServer(mockWebServer);
-        setupMockServer(mockWebServer);
 
-        String datasetID = "b9c10b86-5867-4270-b56e-ee7439fe381e";
+        String datasetID = "d7f1a566-b906-4561-92cb-4758b766335c";
         Schema schema = client.getSchema(datasetID).blockingGet();
 
         List<GenericRecord> records = new ArrayList<>();
@@ -139,9 +135,9 @@ public class GsimClientTest {
                         record.put(field.name(), new Utf8("string"));
                     }
                     break;
-                case LONG:
+                case INT:
                     for (GenericRecord record : records) {
-                        record.put(field.name(), 1L);
+                        record.put(field.name(), 1);
                     }
                     break;
             }
@@ -161,7 +157,7 @@ public class GsimClientTest {
 
         assertThat(recordsList).usingElementComparator((r1, r2) -> {
             for (Schema.Field field : r1.getSchema().getFields()) {
-                if (!r1.get(field.pos()).equals(r2.get(field.pos()))) {
+                if (!r1.get(field.name()).equals(r2.get(field.name()))) {
                     return -1;
                 }
             }
