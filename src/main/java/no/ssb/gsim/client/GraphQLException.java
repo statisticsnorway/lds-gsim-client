@@ -1,7 +1,5 @@
 package no.ssb.gsim.client;
 
-import com.apollographql.apollo.api.Error;
-
 import java.util.List;
 
 public class GraphQLException extends Exception {

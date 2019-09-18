@@ -1,13 +1,9 @@
 package no.ssb.gsim.client;
 
-import io.reactivex.Flowable;
-import io.reactivex.Observable;
-import io.reactivex.Single;
+import io.reactivex.*;
+import io.reactivex.functions.Predicate;
 import io.reactivex.schedulers.Schedulers;
-import no.ssb.rawdata.api.RawdataClient;
-import no.ssb.rawdata.api.RawdataConsumer;
-import no.ssb.rawdata.api.RawdataMessage;
-import no.ssb.rawdata.api.RawdataProducer;
+import no.ssb.rawdata.api.*;
 import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
 import org.apache.avro.Schema;
@@ -15,9 +11,15 @@ import org.apache.avro.generic.GenericData;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
+
+import static no.ssb.gsim.client.GsimClientTest.setupMockServer;
 
 public class RawDataIntegrationTest {
 
@@ -35,32 +37,32 @@ public class RawDataIntegrationTest {
     }
 
     @Test
-    public void testRawDataIntegration() {
+    public void testRawDataIntegration() throws IOException {
 
         // We make two calls (unit and dimensional)
-        mockWebServer.enqueue(unitDatasetResponse);
-        mockWebServer.enqueue(unitDatasetResponse);
-        mockWebServer.enqueue(unitDatasetResponse);
-        mockWebServer.enqueue(unitDatasetResponse);
+        setupMockServer(mockWebServer);
 
         // Does the dataset has data?
         // If yes, get last
-
 
         RawdataConsumer consumer = rawdataClient.consumer("test-topic");
         RawdataProducer producer = rawdataClient.producer("test-topic");
 
         // Convert the consumer to flowable.
-        Flowable<RawdataMessage> data = Flowable.<Single<RawdataMessage>>generate(emitter -> {
-            emitter.onNext(Single.fromFuture(consumer.receiveAsync()));
-        }).concatMapSingle(single -> single).doOnNext(rawdataMessage -> {
-            System.out.printf("[%s]\t\tGot raw message %s\n", Thread.currentThread(), rawdataMessage);
-        });//.subscribeOn(Schedulers.trampoline());
+        Flowable<RawdataMessage> data = Flowable
+                .<Single<RawdataMessage>>generate(emitter -> emitter.onNext(Single.fromFuture(consumer.receiveAsync())))
+                .concatMapSingle(single -> single)
+                .doOnNext(message -> System.out.printf("[%s]\t\tGot raw message %s\n", Thread.currentThread(), message))
+                .onErrorResumeNext(throwable -> {
+                    return throwable.getCause() instanceof RawdataClosedException ? Flowable.empty() : Flowable.error(throwable);
+                });
 
         // Get the schema so we can create the records.
-        Schema schema = gsimClient.getSchema("b9c10b86-5867-4270-b56e-ee7439fe381e")
+        Schema schema = gsimClient.getSchema("d7f1a566-b906-4561-92cb-4758b766335c")
                 .observeOn(Schedulers.trampoline())
                 .blockingGet();
+
+        System.out.println(schema);
 
         // Convert the RawdataMessage to GenericRecord.
         Flowable<GenericRecordWithId> recordData = data.map(rawdataMessage -> {
@@ -72,15 +74,12 @@ public class RawDataIntegrationTest {
 
             GenericData.Record record = new GenericData.Record(schema);
 
-            String person_id = new String(rawdataMessage.get("person_id"));
-            record.put("PERSON_ID", person_id);
+            String person_id = new String(rawdataMessage.get("family_id"));
+            Integer num_children = Integer.parseInt(new String(rawdataMessage.get("num_children")));
             record.put("DATA_QUALITY", person_id);
-            record.put("MARITAL_STATUS", person_id);
-            record.put("MUNICIPALITY", person_id);
-            record.put("GENDER", person_id);
-
-            Integer income = Integer.parseInt(new String(rawdataMessage.get("income")));
-            record.put("INCOME", income);
+            record.put("FAMILY_ID", person_id);
+            record.put("FAMILY_TYPE", person_id);
+            record.put("NUM_CHILDREN", num_children);
 
             return new GenericRecordWithId(record, rawdataMessage.position());
         });
@@ -88,7 +87,7 @@ public class RawDataIntegrationTest {
         // Write unbounded in data set.
         // Writes to disk every hour of every 10 elements, whichever comes first.
         Observable<GenericRecordWithId> feedBack = gsimClient.writeDatasetUnbounded(
-                "b9c10b86-5867-4270-b56e-ee7439fe381e", recordData,
+                "d7f1a566-b906-4561-92cb-4758b766335c", recordData,
                 1, TimeUnit.HOURS,
                 10, "token"
         );
@@ -112,8 +111,8 @@ public class RawDataIntegrationTest {
                 for (int i = 1; i <= 1000; i++) {
                     producer.buffer(producer.builder()
                             .position("external-id-" + i)
-                            .put("person_id", ("id-" + i).getBytes())
-                            .put("income", Integer.toString(i).getBytes())
+                            .put("family_id", ("id-" + i).getBytes())
+                            .put("num_children", Integer.toString(i).getBytes())
                     );
                     ids.add("external-id-" + i);
                     if (i % 100 == 0) {
