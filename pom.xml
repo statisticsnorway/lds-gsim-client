@@ -6,7 +6,7 @@
 
     <groupId>no.ssb.lds</groupId>
     <artifactId>lds-gsim-client</artifactId>
-    <version>0.0.2</version>
+    <version>0.0.3</version>
 
     <name>lds-gsim-client</name>
 
@@ -38,14 +38,14 @@
             <repositories>
                 <repository>
                     <id>ssb-bip-releases</id>
-                    <url>https://nexus.infra.ssbmod.net/repository/maven-releases/</url>
+                    <url>https://nexus.prod-bip-ci.ssb.no/repository/maven-releases/</url>
                     <snapshots>
                         <enabled>false</enabled>
                     </snapshots>
                 </repository>
                 <repository>
                     <id>ssb-bip-snapshots</id>
-                    <url>https://nexus.infra.ssbmod.net/repository/maven-snapshots/</url>
+                    <url>https://nexus.prod-bip-ci.ssb.no/repository/maven-releases/</url>
                     <snapshots>
                         <enabled>true</enabled>
                     </snapshots>
@@ -55,12 +55,12 @@
                 <repository>
                     <id>ssb-bip-releases</id>
                     <name>SSB Nexus Releases</name>
-                    <url>https://nexus.infra.ssbmod.net/repository/maven-releases/</url>
+                    <url>https://nexus.prod-bip-ci.ssb.no/repository/maven-releases/</url>
                 </repository>
                 <snapshotRepository>
                     <id>ssb-bip-snapshots</id>
                     <name>SSB Snapshot Repository</name>
-                    <url>https://nexus.infra.ssbmod.net/repository/maven-snapshots/</url>
+                    <url>https://nexus.prod-bip-ci.ssb.no/repository/maven-snapshots/</url>
                 </snapshotRepository>
             </distributionManagement>
         </profile>
@@ -71,7 +71,7 @@
         <dependency>
             <groupId>no.ssb.lds.data</groupId>
             <artifactId>lds-data-client</artifactId>
-            <version>0.0.3</version>
+            <version>0.0.4</version>
         </dependency>
 
         <dependency>
@@ -84,7 +84,7 @@
         <dependency>
             <groupId>no.ssb.lds</groupId>
             <artifactId>lds-gsim-okhttp</artifactId>
-            <version>0.0.2</version>
+            <version>0.0.3</version>
         </dependency>
 
         <dependency>
