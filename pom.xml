@@ -6,7 +6,7 @@
 
     <groupId>no.ssb.lds</groupId>
     <artifactId>lds-gsim-client</artifactId>
-    <version>0.0.2-SNAPSHOT</version>
+    <version>0.0.2</version>
 
     <name>lds-gsim-client</name>
 
