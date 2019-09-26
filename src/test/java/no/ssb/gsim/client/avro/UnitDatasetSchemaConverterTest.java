@@ -1,49 +1,69 @@
 package no.ssb.gsim.client.avro;
 
-import com.apollographql.apollo.api.Response;
-import com.apollographql.apollo.internal.cache.normalized.ResponseNormalizer;
-import com.apollographql.apollo.response.OperationResponseParser;
-import com.apollographql.apollo.response.ScalarTypeAdapters;
-import com.google.common.io.CharStreams;
-import no.ssb.gsim.client.graphql.GetUnitDatasetQuery;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import no.ssb.lds.gsim.okhttp.UnitDataset;
+import okhttp3.HttpUrl;
+import okhttp3.OkHttpClient;
+import okhttp3.mockwebserver.MockResponse;
+import okhttp3.mockwebserver.MockWebServer;
 import okio.Buffer;
 import org.apache.avro.Schema;
+import org.junit.Before;
 import org.junit.Test;
 
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.util.Collections;
+import java.io.InputStream;
 
 public class UnitDatasetSchemaConverterTest {
 
-    public static String readFileToString(final Class contextClass,
-                                          final String streamIdentifier) throws IOException {
+    private MockWebServer server;
 
-        InputStreamReader inputStreamReader = null;
-        try {
-            inputStreamReader = new InputStreamReader(contextClass.getResourceAsStream(streamIdentifier));
-            return CharStreams.toString(inputStreamReader);
-        } catch (IOException e) {
-            throw new IOException();
-        } finally {
-            if (inputStreamReader != null) {
-                inputStreamReader.close();
-            }
-        }
+    private MockResponse createResponse(String path) throws IOException {
+        InputStream in = this.getClass().getResourceAsStream("/no/ssb/gsim/client/data/" + path);
+        return new MockResponse().setBody(new Buffer().readFrom(in));
+    }
+
+    @Before
+    public void setUp() throws Exception {
+        server = new MockWebServer();
     }
 
     @Test
     public void convert() throws SchemaConverter.StructureConversionException, IOException {
 
-        String json = readFileToString(getClass(), "simpleUnitDataset.json");
-        GetUnitDatasetQuery query = GetUnitDatasetQuery.builder().id("dataset-id").build();
+        server.enqueue(createResponse("UnitDataSet_Family_1.json"));
+        server.enqueue(createResponse("UnitDataStructure_Family_1.json"));
+        server.enqueue(createResponse("LogicalRecord_Family_1.json"));
+        server.enqueue(createResponse("InstanceVariable_FamilyIdentityNumber.json"));
+        server.enqueue(createResponse("InstanceVariable_FamilyType.json"));
+        server.enqueue(createResponse("InstanceVariable_NumOfChildren.json"));
+        server.enqueue(createResponse("InstanceVariable_DataQuality.json"));
 
-        Response<GetUnitDatasetQuery.Data> response = new OperationResponseParser<GetUnitDatasetQuery.Data, GetUnitDatasetQuery.Data>(
-                query, query.responseFieldMapper(), new ScalarTypeAdapters(Collections.emptyMap()), ResponseNormalizer.NO_OP_NORMALIZER
-        ).parse(new Buffer().writeUtf8(json));
+        server.enqueue(createResponse("RepresentedVariable_FamilyIdentifierNumber.json"));
+        server.enqueue(createResponse("DescribedValueDomain_NationalFamilyIdentityNumber.json"));
+
+        server.enqueue(createResponse("RepresentedVariable_FamilyType.json"));
+        server.enqueue(createResponse("EnumeratedValueDomain_Family.json"));
+
+        server.enqueue(createResponse("RepresentedVariable_NumOfChildren.json"));
+        server.enqueue(createResponse("DescribedValueDomain_Integer.json"));
+
+        server.enqueue(createResponse("RepresentedVariable_DataQuality.json"));
+        server.enqueue(createResponse("EnumeratedValueDomain_Quality.json"));
+
+        server.start();
+        HttpUrl baseUrl = server.url("/test/");
+
+        UnitDataset.Fetcher fetcher = new UnitDataset.Fetcher();
+        fetcher.withPrefix(baseUrl);
+        fetcher.withClient(new OkHttpClient());
+        fetcher.withMapper(new ObjectMapper());
+
+        UnitDataset dataset = fetcher.fetch("a");
 
         UnitDatasetSchemaConverter converter = new UnitDatasetSchemaConverter();
-        Schema schema = converter.convert(response.data());
+        Schema schema = converter.convert(dataset);
         System.out.println(schema);
     }
 }
