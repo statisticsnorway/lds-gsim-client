@@ -61,8 +61,11 @@ public class UnitDatasetSchemaConverter implements SchemaConverter<UnitDataset> 
                 return Schema.createRecord("unitDataset", "GSIM Unit dataset",
                         "no.ssb.gsim.dataset", false, fields);
             }
-        } catch (ExecutionException | InterruptedException e) {
-            throw new StructureConversionException(e);
+        } catch (InterruptedException ie) {
+            Thread.currentThread().interrupt();
+            throw new StructureConversionException(ie);
+        } catch (ExecutionException ee) {
+            throw new StructureConversionException(ee);
         }
     }
 }
