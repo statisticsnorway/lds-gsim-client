@@ -1,5 +1,7 @@
 # Linked Data Store (LDS) GSIM client
 
+[![Build Status](https://drone.prod-bip-ci.ssb.no/api/badges/statisticsnorway/lds-gsim-client/status.svg?ref=refs/heads/develop)](https://drone.prod-bip-ci.ssb.no/statisticsnorway/lds-gsim-client)
+
 A LSD client library for GSIM model
 
 ## Usage 
